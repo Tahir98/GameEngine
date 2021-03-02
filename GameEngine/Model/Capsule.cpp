@@ -134,7 +134,7 @@ void Capsule::setSegment(const unsigned int segment){
                 pos.z = cosf(degZ) * sinf(degY) * radius;
 
                 vertices.push_back(pos);
-                vertices.push_back({(float)(j +1)/segment,0,0});
+                vertices.push_back({color});
             }
         }
     }
@@ -147,11 +147,11 @@ void Capsule::setSegment(const unsigned int segment){
         pos.y = height / 2.0f;
 
         vertices.push_back(pos);
-        vertices.push_back({0,1,0});
+        vertices.push_back(color);
 
         pos.y = -height / 2.0f;
         vertices.push_back(pos);
-        vertices.push_back({0,0,1});
+        vertices.push_back(color);
     }
 
     /*     Indices      */

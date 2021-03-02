@@ -52,7 +52,7 @@ void Sphere::init(){
 	va.addVertexAttribute(3, GL_FLOAT, false);
 	va.addVertexAttribute(3, GL_FLOAT, false);
 
-	texture = new Texture("assets/map.png");
+	texture = new Texture("assets/map2.jpg");
 
 	setSegment(segment);
 }
