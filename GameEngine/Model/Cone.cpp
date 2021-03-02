@@ -259,7 +259,6 @@ void Cone::setHeight(const float height){
             }
             else {
                 vertices[i].y = -height / 2.0f;
-                vertices[i + 2].y = -height / 2.0f;
                 i += 2;
             }
         }
@@ -305,7 +304,6 @@ void Cone::setSize(const float radius, const float height){
             }
             else {
                 vertices[i].y = -height / 2.0f;
-                vertices[i + 2].y = -height / 2.0f;
                 i += 2;
             }
         }

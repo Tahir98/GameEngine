@@ -23,7 +23,7 @@ Capsule::Capsule(const float radius, const float height, const unsigned int segm
         this->radius = radius;
     if (height > 0)
         this->height = height;
-    if (segment >= 3 && segment <= 100)
+    if (segment >= 3 && segment <= 50)
         this->segment = segment;
 
     init();
@@ -99,7 +99,7 @@ void Capsule::setDrawMode(DrawMode mode){
 }
 
 void Capsule::setSegment(const unsigned int segment){
-    if (segment >= 3 && segment <= 100) {
+    if (segment >= 3 && segment <= 50) {
         this->segment = segment;
     }
     else {

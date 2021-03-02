@@ -218,7 +218,7 @@ public:
 
 		ImGui::SliderFloat("Rotation speed", &rotate, 0, 0.01f);
 
-		ImGui::SliderInt("Segment", &segment, 2, 100);
+		ImGui::SliderInt("Segment", &segment, 3, 50);
 
 		ImGui::Checkbox("Triangle", &tri);
 		ImGui::Checkbox("Wire Frame", &wf);

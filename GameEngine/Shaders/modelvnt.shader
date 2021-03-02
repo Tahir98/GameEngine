@@ -76,5 +76,5 @@ void main(){
     vec3 specular = light.specular * (spec * material.specular);
 
     vec3 result = ambient + diffuse + specular;
-    color = vec4(result, 1.0) * texture(texture_diffuse1, texCoord) * 0.01 + vec4(result, 1.0) * 0.99;
+    color = vec4(result, 1.0) * texture(texture_diffuse1, texCoord) * 0.99 + vec4(result, 1.0) * 0.01;
 }
