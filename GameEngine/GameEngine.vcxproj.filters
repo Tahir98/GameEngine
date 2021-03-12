@@ -42,7 +42,7 @@
     <ClCompile Include="GDK\ShapeRenderer2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GDK\Skybox.cpp">
+    <ClCompile Include="GDK\Skybox\Skybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GDK\SpriteBatch.cpp">
@@ -63,7 +63,16 @@
     <ClCompile Include="Model\Sphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="external_lib\STB\stb_image.cpp">
+    <ClCompile Include="Model\Cone.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\Capsule.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\Cylinder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\Cylinder.h">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="external_lib\ImGui\imgui.cpp">
@@ -87,16 +96,7 @@
     <ClCompile Include="external_lib\ImGui\imgui_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Model\Cone.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Model\Capsule.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Model\Cylinder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Model\Cylinder.h">
+    <ClCompile Include="external_lib\STB\stb_image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -143,7 +143,7 @@
     <ClInclude Include="GDK\ShapeRenderer2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GDK\Skybox.h">
+    <ClInclude Include="GDK\Skybox\Skybox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GDK\SpriteBatch.h">
@@ -188,6 +188,21 @@
     <ClInclude Include="Model\Sphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Model\Cone.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\Capsule.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\Shape.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GDK\Skybox\SpherecalSkybox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GDK\Utility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="external_lib\ImGui\imconfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -212,12 +227,6 @@
     <ClInclude Include="external_lib\ImGui\imstb_truetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Model\Cone.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Model\Capsule.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\batch.shader" />
@@ -233,6 +242,6 @@
     <None Include="Shaders\cube.shader" />
     <None Include="Shaders\sphere.shader" />
     <None Include="Shaders\sphereWF.shader" />
-    <None Include="Shaders\Cone.shader" />
+    <None Include="Shaders\shape.shader" />
   </ItemGroup>
 </Project>

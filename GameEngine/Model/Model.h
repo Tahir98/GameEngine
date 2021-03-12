@@ -1,3 +1,4 @@
+#pragma once
 #include "GL/glew.h"
 #include "Program.h"
 #include "GLMath.h"

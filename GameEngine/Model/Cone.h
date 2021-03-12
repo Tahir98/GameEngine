@@ -1,43 +1,13 @@
-#include <vector>
-#include "GLMath.h"
-#include "VertexArray.h"
-#include "VertexBuffer.h"
-#include "IndexBuffer.h"
-#include "Program.h"
-#include "Camera/Camera.h"
+#pragma once
+#include "Shape.h"
 
-class Cone {
+class Cone : public Shape{
 public:
-	enum DrawMode {
-		POINT = 0, LINE = 1, TRIANGLE = 2
-	};
-
+	
 private:
-
-	VertexArray va;
-	VertexBuffer* vb = nullptr;
-	IndexBuffer* ib = nullptr;
-	IndexBuffer* ibl = nullptr;
-
-	Program* program = nullptr;
-
-	std::vector<Vec3> vertices;
-	std::vector<unsigned int> indices;
-	std::vector<unsigned int> lineIndices;
-
-	unsigned int segment = 100;
-
-	Matrix4x4 model;
-	Vec3 pos = { 0,0,0 };
-	Vec3 scale = { 1,1,1 };
-	Vec3 rotation = { 0,0,0 };
-
-	float radius = 1;
-	float height = 1;
-
-	Vec3 color = { 1,0,0 };
-
-	DrawMode mode = DrawMode::TRIANGLE;
+	unsigned int segment = 20, sTemp = 20;
+	float radius = 0.5f, rTemp = 0.5f;
+	float height = 1, hTemp = 1;
 
 public:
 	Cone();
@@ -47,10 +17,11 @@ public:
 
 	~Cone();
 
-	void init();
+	void init() override;
 
-	void draw(Camera& camera);
-	void setDrawMode(DrawMode mode);
+	void draw(Camera& camera) override;
+	void draw(Camera& camera , Light light) override;
+	void imGuiDraw() override;
 
 	void setSegment(const unsigned int segment);
 	unsigned int getSegment();
@@ -63,16 +34,5 @@ public:
 
 	void setSize(const float radius, const float height);
 
-	void setPosition(const Vec3 pos);
-	Vec3 getPosition();
-
-	void setScale(const Vec3 scale);
-	Vec3 getScale();
-
-	void rotate(Vec3 rot);
-	void setRotation(Vec3 rotation);
-	Vec3 getRotation();
-
-	void setColor(Vec3 color);
-	Vec3 getColor();
+	void setMaterial(Material material);
 };

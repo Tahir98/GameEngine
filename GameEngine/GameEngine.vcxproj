@@ -64,6 +64,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\STB;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\Assimp\include</AdditionalIncludeDirectories>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -83,6 +84,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\STB;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\Assimp\include</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -107,7 +109,7 @@
     <ClCompile Include="GDK\GLMath.cpp" />
     <ClCompile Include="GDK\InputHandler.cpp" />
     <ClCompile Include="GDK\ShapeRenderer2D.cpp" />
-    <ClCompile Include="GDK\Skybox.cpp" />
+    <ClCompile Include="GDK\Skybox\Skybox.cpp" />
     <ClCompile Include="GDK\SpriteBatch.cpp" />
     <ClCompile Include="GLLib\IndexBuffer.cpp" />
     <ClCompile Include="GLLib\Program.cpp" />
@@ -143,8 +145,10 @@
     <ClInclude Include="GDK\InputHandler.h" />
     <ClInclude Include="GDK\EngineLog.h" />
     <ClInclude Include="GDK\ShapeRenderer2D.h" />
-    <ClInclude Include="GDK\Skybox.h" />
+    <ClInclude Include="GDK\Skybox\Skybox.h" />
+    <ClInclude Include="GDK\Skybox\SpherecalSkybox.h" />
     <ClInclude Include="GDK\SpriteBatch.h" />
+    <ClInclude Include="GDK\Utility.h" />
     <ClInclude Include="GLLib\IndexBuffer.h" />
     <ClInclude Include="GLLib\Program.h" />
     <ClInclude Include="GLLib\Texture.h" />
@@ -155,6 +159,7 @@
     <ClInclude Include="Model\Cube.h" />
     <ClInclude Include="Model\Mesh.h" />
     <ClInclude Include="Model\Model.h" />
+    <ClInclude Include="Model\Shape.h" />
     <ClInclude Include="Model\Sphere.h" />
     <ClInclude Include="Scenes\FlappyBird.h" />
     <ClInclude Include="Scenes\LightingScene.h" />
@@ -167,7 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\batch.shader" />
-    <None Include="Shaders\Cone.shader" />
+    <None Include="Shaders\shape.shader" />
     <None Include="Shaders\cube.shader" />
     <None Include="Shaders\example.shader" />
     <None Include="Shaders\freetype.shader" />

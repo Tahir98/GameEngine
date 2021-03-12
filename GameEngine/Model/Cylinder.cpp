@@ -1,30 +1,37 @@
+#pragma once
 #include "Cylinder.h"
-#include <iostream>
+//#include <iostream>
+#include "imgui.h"
 
 Cylinder::Cylinder(){
     init();
 }
 
-Cylinder::Cylinder(const Vec3 pos, const float radius, const float height) : pos(pos){
+Cylinder::Cylinder(const Vec3 pos, const float radius, const float height) {
+    this->pos = pos;
+
     if (radius > 0)
-        this->radius = radius;
+        this->radius = rTemp = radius;
     if (height > 0)
-        this->height = height;
+        this->height = hTemp = height;
 
     init();
 }
 
-Cylinder::Cylinder(const Vec3 pos, const Vec3 scale, const Vec3 rotation) : pos(pos),scale(scale),rotation(rotation){
+Cylinder::Cylinder(const Vec3 pos, const Vec3 scale, const Vec3 rotation) {
+    this->pos = pos;
+    this->scale = scale;
+    this->rotation = rotation;
     init();
 }
 
 Cylinder::Cylinder(const float radius, const float height, const unsigned int segment){
     if (radius > 0)
-        this->radius = radius;
+        this->radius = rTemp = radius;
     if (height > 0)
-        this->height = height;
-    if (segment >= 3 && segment <= 100)
-        this->segment = segment;
+        this->height = hTemp = height;
+    if (segment >= 3 && segment <= 50)
+        this->segment = sTemp = segment;
     init();
 }
 
@@ -48,7 +55,12 @@ Cylinder::~Cylinder(){
 }
 
 void Cylinder::init(){
-    program = new Program("Shaders/Cone.shader");
+    material.ambient = { 0.3f,0.3f,0.3f };
+    material.diffuse = { 0.7f,0.7f,0.7f };
+    material.specular = { 0.9f,0.9f,0.9f };
+    material.shininess = 150;
+
+    program = new Program("Shaders/shape.shader");
 
     vb = new VertexBuffer(nullptr, sizeof(Vec3) * 804, GL_STATIC_DRAW);
 
@@ -75,31 +87,123 @@ void Cylinder::draw(Camera& camera){
     program->setUniformMatrix4fv("projection", 1, false, camera.combine());
 
     va.bind();
+    vb->bind();
 
-    if (mode == DrawMode::POINT) {
+    if ((debugMode && triangle) || (!debugMode && mode == DrawMode::TRIANGLE)) {
+        ib->bind();
+        program->setUniform1f("chosen", 2);
+
+        program->setUniform3f("material.ambient", material.ambient.x, material.ambient.y, material.ambient.z);
+        program->setUniform3f("material.diffuse", material.diffuse.x, material.diffuse.y, material.diffuse.z);
+        program->setUniform3f("material.specular", material.specular.x, material.specular.y, material.specular.z);
+        program->setUniform1f("material.shininess", material.shininess);
+
+        program->setUniform3f("light.specular", 0, 0, 0);
+
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    }
+
+    if ((debugMode && point) || (!debugMode && mode == DrawMode::POINT)) {
         program->setUniform1f("chosen", 0);
         glDrawArrays(GL_POINTS, 0, vertices.size() / 2);
     }
-    else if (mode == DrawMode::LINE) {
+
+    if ((debugMode && line) || (!debugMode && mode == DrawMode::LINE)) {
         ibl->bind();
-        //glDisable(GL_DEPTH_TEST);
         program->setUniform1f("chosen", 1);
         glDrawElements(GL_LINES, lineIndices.size(), GL_UNSIGNED_INT, 0);
     }
-    else if (mode == DrawMode::TRIANGLE) {
-        ib->bind();
-        program->setUniform1f("chosen", 2);
-        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
+    if (debugMode) {
+        imGuiDraw();
+        if (sTemp != segment)
+            setSegment(sTemp);
+        if (rTemp != radius)
+            setRadius(rTemp);
+        if (hTemp != height)
+            setHeight(hTemp);
     }
 }
 
-void Cylinder::setDrawMode(DrawMode mode){
-    this->mode = mode;
+void Cylinder::draw(Camera& camera, Light light){
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+
+    model = GLMath::translate(pos) * GLMath::scale(scale) * GLMath::rotate(rotation);
+
+    program->setUniformMatrix4fv("model", 1, false, model.m[0]);
+    program->setUniformMatrix4fv("view", 1, false, camera.getViewMatrix());
+    program->setUniformMatrix4fv("projection", 1, false, camera.combine());
+
+    va.bind();
+    vb->bind();
+
+    if ((debugMode && triangle) || (!debugMode && mode == DrawMode::TRIANGLE)) {
+        ib->bind();
+        program->setUniform1f("chosen", 2);
+
+        program->setUniform3f("material.ambient", material.ambient.x, material.ambient.y, material.ambient.z);
+        program->setUniform3f("material.diffuse", material.diffuse.x, material.diffuse.y, material.diffuse.z);
+        program->setUniform3f("material.specular", material.specular.x, material.specular.y, material.specular.z);
+        program->setUniform1f("material.shininess", material.shininess);
+
+        program->setUniform3f("light.pos", light.pos.x, light.pos.y, light.pos.z);
+        program->setUniform3f("light.ambient", light.ambient.x, light.ambient.y, light.ambient.z);
+        program->setUniform3f("light.diffuse", light.diffuse.x, light.diffuse.y, light.diffuse.z);
+        program->setUniform3f("light.specular", light.specular.x, light.specular.y, light.specular.z);
+
+        Vec3 viewPos = camera.getPosition();
+        program->setUniform3f("viewPos", viewPos.x, viewPos.y, viewPos.z);
+
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    }
+
+    if ((debugMode && point) || (!debugMode && mode == DrawMode::POINT)) {
+        program->setUniform1f("chosen", 0);
+        glDrawArrays(GL_POINTS, 0, vertices.size() / 2);
+    }
+
+    if ((debugMode && line) || (!debugMode && mode == DrawMode::LINE)) {
+        ibl->bind();
+        program->setUniform1f("chosen", 1);
+        glDrawElements(GL_LINES, lineIndices.size(), GL_UNSIGNED_INT, 0);
+    }
+
+    if (debugMode) {
+        imGuiDraw();
+        if (sTemp != segment)
+            setSegment(sTemp);
+        if (rTemp != radius)
+            setRadius(rTemp);
+        if (hTemp != height)
+            setHeight(hTemp);
+    }
+}
+
+void Cylinder::imGuiDraw(){
+    ImGui::Begin("Cylinder");
+    ImGui::SliderFloat3("Position", (float*)&pos, -20, 20);
+    ImGui::SliderFloat3("Scale", (float*)&scale, 0, 10);
+    ImGui::SliderFloat3("Rotation", (float*)&rotation, -PI, PI);
+    ImGui::SliderFloat3("amibent", (float*)&material.ambient, 0, 1);
+    ImGui::SliderFloat3("diffuse", (float*)&material.diffuse, 0, 1);
+    ImGui::SliderFloat3("specular", (float*)&material.specular, 0, 1);
+    ImGui::SliderFloat("shininess", &material.shininess, 1, 200);
+    ImGui::SliderInt("Segment", (int*)&sTemp, 3, 50);
+    ImGui::SliderFloat("Height", &hTemp, 0, 10);
+    ImGui::SliderFloat("Radius", &rTemp, 0, 10);
+    ImGui::Checkbox("Point", &point);
+    ImGui::Checkbox("Line", &line);
+    ImGui::Checkbox("Triangle", &triangle);
+    ImGui::End();
 }
 
 void Cylinder::setSegment(const unsigned int segment){
-    if (segment >= 3 && segment <= 100) {
+  
+    if (segment >= 3 && segment <= 50) {
         this->segment = segment;
+        if (sTemp != segment)
+            sTemp = segment;
     }
     else {
         return;
@@ -118,9 +222,9 @@ void Cylinder::setSegment(const unsigned int segment){
     lineIndices.shrink_to_fit();
 
     vertices.push_back({ 0,height / 2.0f,0 });
-    vertices.push_back({0,0,1});
+    vertices.push_back({ 0,1,0 });
     vertices.push_back({ 0,-height / 2.0f,0 });
-    vertices.push_back({0,1,0});
+    vertices.push_back({ 0,-1,0 });
 
     for (unsigned int j = 0; j < 3; j++) {
         for (unsigned int i = 0; i < segment; i++) {
@@ -133,21 +237,21 @@ void Cylinder::setSegment(const unsigned int segment){
             if (j == 0) {
                 pos.y = height / 2.0f;
                 vertices.push_back(pos);
-                vertices.push_back({ 1,1,1 });
+                vertices.push_back({0,1,0});
             }
             else if (j == 1) {
                 pos.y = -height / 2.0f;
                 vertices.push_back(pos);
-                vertices.push_back({ 0,0,0 });
+                vertices.push_back({ 0,-1,0 });
             }
             else {
                 pos.y = height / 2.0f;
                 vertices.push_back(pos);
-                vertices.push_back({ 1,1,1 });
+                vertices.push_back({ pos.x,0,pos.z });
 
                 pos.y = -height / 2.0f;
                 vertices.push_back(pos);
-                vertices.push_back({ 0,0,0 });
+                vertices.push_back({ pos.x,0,pos.z });
             }
         }
     }
@@ -262,6 +366,12 @@ unsigned int Cylinder::getSegment(){
 }
 
 void Cylinder::setRadius(const float radius){
+    if (radius == this->radius)
+        return;
+
+    if (rTemp != radius)
+        rTemp = radius;
+
     if (radius > 0) {
         for (unsigned int i = 4; i < vertices.size(); i += 2) {
             vertices[i].x = vertices[i].x / this->radius * radius;
@@ -279,6 +389,12 @@ float Cylinder::getRadius(){
 }
 
 void Cylinder::setHeight(const float height){
+    if (height == this->height)
+        return;
+
+    if (hTemp != height)
+        hTemp = height;
+
     if (height > 0) {
         vertices[0].y = height / 2.0f;
         vertices[2].y = -height / 2.0f;
@@ -308,6 +424,15 @@ float Cylinder::getHeight(){
 }
 
 void Cylinder::setSize(const float radius, const float height){
+    if (radius == this->radius && height == this->height)
+        return;
+
+    if (rTemp != radius)
+        rTemp = radius;
+
+    if (hTemp != height)
+        hTemp = height;
+
     if (radius > 0) {
         for (unsigned int i = 4; i < vertices.size(); i += 2) {
             vertices[i].x = vertices[i].x / this->radius * radius;
@@ -344,42 +469,9 @@ void Cylinder::setSize(const float radius, const float height){
     }
 }
 
-void Cylinder::setPosition(const Vec3 pos){
-    this->pos = pos;
+void Cylinder::setMaterial(Material material){
+    this->material = material;
 }
 
-Vec3 Cylinder::getPosition(){
-    return pos;
-}
 
-void Cylinder::setScale(const Vec3 scale){
-    this->scale = scale;
-}
 
-Vec3 Cylinder::getScale(){
-    return scale;
-}
-
-void Cylinder::rotate(Vec3 rot){
-    rotation = rotation + rot;
-}
-
-void Cylinder::setRotation(Vec3 rotation){
-    this->rotation = rotation;
-}
-
-Vec3 Cylinder::getRotation(){
-    return rotation;
-}
-
-void Cylinder::setColor(Vec3 color){
-    for (unsigned int i = 0; i < vertices.size(); i += 2) {
-        vertices[i + 1] = color;
-    }
-
-    this->color = color;
-}
-
-Vec3 Cylinder::getColor(){
-    return color;
-}

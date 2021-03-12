@@ -1,3 +1,4 @@
+#pragma once
 #include "VertexArray.h"
 #include "GL/glew.h"
 

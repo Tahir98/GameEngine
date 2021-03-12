@@ -1,3 +1,5 @@
+#pragma once
+
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 #include "Core.h"
@@ -38,6 +40,7 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_PROGRAM_POINT_SIZE);
+	glDepthFunc(GL_LEQUAL);
 
 	glfwSwapInterval(0);
 

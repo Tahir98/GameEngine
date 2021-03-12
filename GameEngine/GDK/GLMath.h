@@ -390,7 +390,7 @@ struct Matrix2x2{
 
 
 namespace GLMath {
-#define PI  3.14159f
+#define PI  3.14159274101257324219f
 
 	Vec2 nornalize(Vec2 a);
 	Vec3 normalize(Vec3 a); 

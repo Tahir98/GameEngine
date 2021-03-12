@@ -1,52 +1,35 @@
-#include "GLMath.h"
-#include <vector>
-#include <iostream>
-#include "VertexArray.h"
-#include "VertexBuffer.h"
-#include "Program.h"
-#include "IndexBuffer.h"
-#include "Camera/Camera.h"
+#pragma once
 
-struct Vertex2 {
-	Vec3 pos;
-	Vec3 color;
-	Vec3 normal;
-};
+#include "Shape.h"
+#include "Texture.h"
 
-class Cube {
-private: 
-	Vec3 pos = { 0,0,0 };
-	Vec3 scale = { 1,1,1 };
-	Vec3 rotation = { 0,0,0 };
+class Cube : public Shape {
+public:
+	bool drawTexture = 1;
 
-	Matrix4x4 model;
+private:
+	Vec3 size = { 1,1,1 }, sTemp = {1,1,1};
+	Texture* texture = nullptr;
 
-	float* positions = nullptr;
-	float* normals = nullptr;
-	unsigned int* indices = nullptr;
-
-	Program program;
-	VertexArray va;
-	VertexBuffer* vb = nullptr;
-
-	std::vector<Vertex2> vertices;
+	const char* texturePath = nullptr;
 
 public:
 	Cube();
-	Cube(Vec3 pos);
-	Cube(Vec3 pos, Vec3 scale, Vec3 rotation);
+	Cube(const char* texturePath);
+	Cube(const Vec3 pos,const Vec3 size, const char* texturePath);
+	Cube(const Vec3 pos, const Vec3 scale, const Vec3 rotation, const char* texturePath);
 
+	Cube(const Vec3 size, const char* texturePath);
 	~Cube();
 
-	void setPosition(Vec3 pos);
-	Vec3 getPosition();
+	void init() override;
 
-	void setScale(Vec3 scale);
-	Vec3 getScale();
+	void draw(Camera& camera) override;
+	void draw(Camera& camera, Light light) override;
+	void imGuiDraw() override;
 
-	void rotate(Vec3 rot);
-	void setRotation(Vec3 rot);
+	void setSize(const Vec3 size);
+	Vec3 getSize();
 
-	void draw(Camera& camera);
-
+	void setMaterial(Material material);
 };

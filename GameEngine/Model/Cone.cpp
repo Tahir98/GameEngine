@@ -1,30 +1,38 @@
+#pragma once
+
 #include "Cone.h"
 #include <iostream>
+#include "imgui.h"
 
 Cone::Cone(){
     init();
 }
 
-Cone::Cone(const Vec3 pos, const float radius, const float height) : pos(pos){
+Cone::Cone(const Vec3 pos, const float radius, const float height){
+    this->pos = pos;
+
     if (radius > 0)
-        this->radius = radius;
-    if (height > 0)
-        this->height = height;
+        this->radius = rTemp = radius;
+    if (height >= 0)
+        this->height = hTemp = height;
 
     init();
 }
 
-Cone::Cone(const Vec3 pos, const Vec3 scale, const Vec3 rotation): pos(pos),scale(scale),rotation(rotation){
+Cone::Cone(const Vec3 pos, const Vec3 scale, const Vec3 rotation){
+    this->pos = pos;
+    this->scale = scale;
+    this->rotation = rotation;
     init();
 }
 
 Cone::Cone(const float radius, const float height, const unsigned int segment){
     if (radius > 0)
-        this->radius = radius;
-    if (height > 0)
-        this->height = height;
-    if (segment >= 3 && segment <= 100)
-        this->segment = segment;
+        this->radius = rTemp = radius;
+    if (height >= 0)
+        this->height = hTemp = height;
+    if (segment >= 3 && segment <= 50)
+        this->segment = sTemp = segment;
 
     init();
 }
@@ -49,9 +57,14 @@ Cone::~Cone(){
 }
 
 void Cone::init(){
-    program = new Program("Shaders/Cone.shader");
+    material.ambient = { 0.3f,0.3f,0.3f };
+    material.diffuse = { 0.7f,0.7f,0.7f };
+    material.specular = { 0.9f,0.9f,0.9f };
+    material.shininess = 150;
 
-    vb = new VertexBuffer(nullptr,sizeof(Vec3) * 602,GL_STATIC_DRAW);
+    program = new Program("Shaders/shape.shader");
+
+    vb = new VertexBuffer(nullptr, sizeof(Vec3) * 602, GL_STATIC_DRAW);
 
     ib = new IndexBuffer(nullptr, sizeof(unsigned int) * 600, GL_STATIC_DRAW);
     ibl = new IndexBuffer(nullptr, sizeof(unsigned int) * 600, GL_STATIC_DRAW);
@@ -77,31 +90,121 @@ void Cone::draw(Camera& camera){
 
     va.bind();
 
-    if (mode == DrawMode::POINT) {
+    if ((debugMode && triangle) || (!debugMode && mode == DrawMode::TRIANGLE)) {
+        ib->bind();
+        program->setUniform1f("chosen", 2);
+
+        program->setUniform3f("material.ambient", material.ambient.x, material.ambient.y, material.ambient.z);
+        program->setUniform3f("material.diffuse", material.diffuse.x, material.diffuse.y, material.diffuse.z);
+        program->setUniform3f("material.specular", material.specular.x, material.specular.y, material.specular.z);
+        program->setUniform1f("material.shininess", material.shininess);
+
+        program->setUniform3f("light.specular", 0, 0, 0);
+
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    }
+
+    if ((debugMode && point) || (!debugMode && mode == DrawMode::POINT)) {
         program->setUniform1f("chosen", 0);
         glDrawArrays(GL_POINTS, 0, vertices.size() / 2);
     }
-    else if (mode == DrawMode::LINE) {
+
+    if ((debugMode && line) || (!debugMode && mode == DrawMode::LINE)) {
         ibl->bind();
-        //glDisable(GL_DEPTH_TEST);
         program->setUniform1f("chosen", 1);
         glDrawElements(GL_LINES, lineIndices.size(), GL_UNSIGNED_INT, 0);
     }
-    else if (mode == DrawMode::TRIANGLE) {
-        ib->bind();
-        program->setUniform1f("chosen", 2);
-        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
+    if (debugMode) {
+        imGuiDraw();
+        if (sTemp != segment)
+            setSegment(sTemp);
+        if (rTemp != radius)
+            setRadius(rTemp);
+        if (hTemp != height)
+            setHeight(hTemp);
     }
 }
 
-void Cone::setDrawMode(DrawMode mode){
-    this->mode = mode;
+void Cone::draw(Camera& camera, Light light){
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+
+    model = GLMath::translate(pos) * GLMath::scale(scale) * GLMath::rotate(rotation);
+
+    program->setUniformMatrix4fv("model", 1, false, model.m[0]);
+    program->setUniformMatrix4fv("view", 1, false, camera.getViewMatrix());
+    program->setUniformMatrix4fv("projection", 1, false, camera.combine());
+
+    va.bind();
+
+    if ((debugMode && triangle) || (!debugMode && mode == DrawMode::TRIANGLE)) {
+        ib->bind();
+        program->setUniform1f("chosen", 2);
+
+        program->setUniform3f("material.ambient", material.ambient.x, material.ambient.y, material.ambient.z);
+        program->setUniform3f("material.diffuse", material.diffuse.x, material.diffuse.y, material.diffuse.z);
+        program->setUniform3f("material.specular", material.specular.x, material.specular.y, material.specular.z);
+        program->setUniform1f("material.shininess", material.shininess);
+
+        program->setUniform3f("light.pos", light.pos.x, light.pos.y, light.pos.z);
+        program->setUniform3f("light.ambient", light.ambient.x, light.ambient.y, light.ambient.z);
+        program->setUniform3f("light.diffuse", light.diffuse.x, light.diffuse.y, light.diffuse.z);
+        program->setUniform3f("light.specular", light.specular.x, light.specular.y, light.specular.z);
+
+        Vec3 viewPos = camera.getPosition();
+        program->setUniform3f("viewPos", viewPos.x, viewPos.y, viewPos.z);
+
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    }
+
+    if ((debugMode && point) || (!debugMode && mode == DrawMode::POINT)) {
+        program->setUniform1f("chosen", 0);
+        glDrawArrays(GL_POINTS, 0, vertices.size() / 2);
+    }
+
+    if ((debugMode && line) || (!debugMode && mode == DrawMode::LINE)) {
+        ibl->bind();
+        program->setUniform1f("chosen", 1);
+        glDrawElements(GL_LINES, lineIndices.size(), GL_UNSIGNED_INT, 0);
+    }
+
+    if (debugMode) {
+        imGuiDraw();
+        if (sTemp != segment)
+            setSegment(sTemp);
+        if (rTemp != radius)
+            setRadius(rTemp);
+        if (hTemp != height)
+            setHeight(hTemp);
+    }
 }
 
+void Cone::imGuiDraw(){
+    ImGui::Begin("Cone");
+    ImGui::SliderFloat3("Position", (float*)&pos, -20, 20);
+    ImGui::SliderFloat3("Scale", (float*)&scale, 0, 10);
+    ImGui::SliderFloat3("Rotation", (float*)&rotation, -PI, PI);
+    ImGui::SliderFloat3("amibent", (float*)&material.ambient, 0, 1);
+    ImGui::SliderFloat3("diffuse", (float*)&material.diffuse, 0, 1);
+    ImGui::SliderFloat3("specular", (float*)&material.specular, 0, 1);
+    ImGui::SliderFloat("shininess", &material.shininess, 1, 200);
+    ImGui::SliderInt("Segment", (int*)&sTemp, 3, 50);
+    ImGui::SliderFloat("Height", &hTemp, 0, 10);
+    ImGui::SliderFloat("Radius", &rTemp, 0, 10);
+    ImGui::Checkbox("Point", &point);
+    ImGui::Checkbox("Line", &line);
+    ImGui::Checkbox("Triangle", &triangle);
+    ImGui::End();
+}
+
+
 void Cone::setSegment(const unsigned int segment){
-   
-    if (segment >= 3 && segment <= 100) {
+
+    if (segment >= 3 && segment <= 50) {
         this->segment = segment;
+        if (sTemp != segment)
+            sTemp = segment;
     }
     else {
         return;
@@ -121,22 +224,32 @@ void Cone::setSegment(const unsigned int segment){
 
     
     for (unsigned int i = 0; i < segment; i++) {
-        float radian = i * 2.0f * PI / (float)segment;
+        float radian = (i + 0.5f) * 2.0f * PI / (float)segment;
         Vec3 pos;
 
+        float length = sqrtf(radius * radius + height * height);
+        float coneX = radius / length;
+        float coneY = -height / length;
+
         pos.y = -height / 2.0f;
-        pos.x = cosf(radian) * radius;
-        pos.z = sinf(radian) * radius;
+        pos.x = cosf(radian);
+        pos.z = sinf(radian);
 
         vertices.push_back({ 0, height / 2.0f,0 });
-        vertices.push_back(color);
+        vertices.push_back({ -coneY * pos.x,coneX,-coneY * pos.z });
 
-        vertices.push_back(pos);
-        vertices.push_back(color);
+        radian = i * 2.0f * PI / (float)segment;
+
+        pos.y = -height / 2.0f;
+        pos.x = cosf(radian);
+        pos.z = sinf(radian);
+
+        vertices.push_back({ pos.x * radius, pos.y, pos.z * radius });
+        vertices.push_back({ -coneY * pos.x,coneX,-coneY * pos.z });
     }
     
     vertices.push_back({ 0, -height / 2.0f,0 });
-    vertices.push_back(color);
+    vertices.push_back({ 0,-1,0 });
 
     for (unsigned int i = 0; i < segment; i++) {
         float radian = i * 2.0f * PI / (float)segment;
@@ -147,7 +260,7 @@ void Cone::setSegment(const unsigned int segment){
         pos.z = sinf(radian) * radius;
 
         vertices.push_back(pos);
-        vertices.push_back(color);
+        vertices.push_back({ 0,-1,0 });
     }
     
     //Triangle indices
@@ -221,23 +334,55 @@ unsigned int Cone::getSegment(){
 }
 
 void Cone::setRadius(const float radius){
+    if (radius == this->radius)
+        return;
+
+    if (rTemp != radius)
+        rTemp = radius;
+
     if (radius > 0) {
-        for (unsigned int i = 0; i < vertices.size();) {
-            if (i < 4 * segment) {
-                vertices[i + 2].x = vertices[i + 2].x / this->radius * radius;
-                vertices[i + 2].z = vertices[i + 2].z / this->radius * radius;
+        vertices.clear();
+        vertices.resize(0);
+        vertices.shrink_to_fit();
 
-                i += 4;
-            }
-            else if(i >= 4 *segment + 2) {
-                vertices[i].x = vertices[i].x / this->radius * radius;
-                vertices[i].z = vertices[i].z / this->radius * radius;
+        for (unsigned int i = 0; i < segment; i++) {
+            float radian = (i + 0.5f) * 2.0f * PI / (float)segment;
+            Vec3 pos;
 
-                i += 2;
-            }
-            else {
-                i += 2;
-            }
+            float length = sqrtf(radius * radius + height * height);
+            float coneX = radius / length;
+            float coneY = -height / length;
+
+            pos.y = -height / 2.0f;
+            pos.x = cosf(radian);
+            pos.z = sinf(radian);
+
+            vertices.push_back({ 0, height / 2.0f,0 });
+            vertices.push_back({ -coneY * pos.x,coneX,-coneY * pos.z });
+
+            radian = i * 2.0f * PI / (float)segment;
+
+            pos.y = -height / 2.0f;
+            pos.x = cosf(radian);
+            pos.z = sinf(radian);
+
+            vertices.push_back({ pos.x * radius, pos.y, pos.z * radius });
+            vertices.push_back({ -coneY * pos.x,coneX,-coneY * pos.z });
+        }
+
+        vertices.push_back({ 0, -height / 2.0f,0 });
+        vertices.push_back({ 0,-1,0 });
+
+        for (unsigned int i = 0; i < segment; i++) {
+            float radian = i * 2.0f * PI / (float)segment;
+            Vec3 pos;
+
+            pos.y = -height / 2.0f;
+            pos.x = cosf(radian) * radius;
+            pos.z = sinf(radian) * radius;
+
+            vertices.push_back(pos);
+            vertices.push_back({ 0,-1,0 });
         }
 
         this->radius = radius;
@@ -250,17 +395,55 @@ float Cone::getRadius() {
 }
 
 void Cone::setHeight(const float height){
-    if (height > 0) {
-        for (unsigned int i = 0; i < vertices.size(); ){
-            if (i < 4 * segment) {
-                vertices[i].y = height / 2.0f;
-                vertices[i + 2].y = -height / 2.0f;
-                i += 4;
-            }
-            else {
-                vertices[i].y = -height / 2.0f;
-                i += 2;
-            }
+    if (height == this->height)
+        return;
+
+    if (hTemp != height)
+        hTemp = height;
+
+    if (height >= 0) {
+        vertices.clear();
+        vertices.resize(0);
+        vertices.shrink_to_fit();
+
+        for (unsigned int i = 0; i < segment; i++) {
+            float radian = (i + 0.5f) * 2.0f * PI / (float)segment;
+            Vec3 pos;
+
+            float length = sqrtf(radius * radius + height * height);
+            float coneX = radius / length;
+            float coneY = -height / length;
+
+            pos.y = -height / 2.0f;
+            pos.x = cosf(radian);
+            pos.z = sinf(radian);
+
+            vertices.push_back({ 0, height / 2.0f,0 });
+            vertices.push_back({ -coneY * pos.x,coneX,-coneY * pos.z });
+
+            radian = i * 2.0f * PI / (float)segment;
+
+            pos.y = -height / 2.0f;
+            pos.x = cosf(radian);
+            pos.z = sinf(radian);
+
+            vertices.push_back({ pos.x * radius, pos.y, pos.z * radius });
+            vertices.push_back({ -coneY * pos.x,coneX,-coneY * pos.z });
+        }
+
+        vertices.push_back({ 0, -height / 2.0f,0 });
+        vertices.push_back({ 0,-1,0 });
+
+        for (unsigned int i = 0; i < segment; i++) {
+            float radian = i * 2.0f * PI / (float)segment;
+            Vec3 pos;
+
+            pos.y = -height / 2.0f;
+            pos.x = cosf(radian) * radius;
+            pos.z = sinf(radian) * radius;
+
+            vertices.push_back(pos);
+            vertices.push_back({ 0,-1,0 });
         }
 
         this->height = height;
@@ -273,87 +456,67 @@ float Cone::getHeight(){
 }
 
 void Cone::setSize(const float radius, const float height){
-    if (radius > 0) {
-         for (unsigned int i = 0; i < vertices.size();) {
-            if (i < 4 * segment) {
-                vertices[i + 2].x = vertices[i + 2].x / this->radius * radius;
-                vertices[i + 2].z = vertices[i + 2].z / this->radius * radius;
+    if (radius == this->radius && height == this->height)
+        return;
+    
+    if (rTemp != radius)
+        rTemp = radius;
+    if (hTemp != height)
+        hTemp = height;
 
-                i += 4;
-            }
-            else if(i >= 4 *segment + 2) {
-                vertices[i].x = vertices[i].x / this->radius * radius;
-                vertices[i].z = vertices[i].z / this->radius * radius;
+    if (radius > 0 || height >= 0) {
+        vertices.clear();
+        vertices.resize(0);
+        vertices.shrink_to_fit();
 
-                i += 2;
-            }
-            else {
-                i += 2;
-            }
+        for (unsigned int i = 0; i < segment; i++) {
+            float radian = (i + 0.5f) * 2.0f * PI / (float)segment;
+            Vec3 pos;
+
+            float length = sqrtf(radius * radius + height * height);
+            float coneX = radius / length;
+            float coneY = -height / length;
+
+            pos.y = -height / 2.0f;
+            pos.x = cosf(radian);
+            pos.z = sinf(radian);
+
+            vertices.push_back({ 0, height / 2.0f,0 });
+            vertices.push_back({ -coneY * pos.x,coneX,-coneY * pos.z });
+
+            radian = i * 2.0f * PI / (float)segment;
+
+            pos.y = -height / 2.0f;
+            pos.x = cosf(radian);
+            pos.z = sinf(radian);
+
+            vertices.push_back({ pos.x * radius, pos.y, pos.z * radius });
+            vertices.push_back({ -coneY * pos.x,coneX,-coneY * pos.z });
+        }
+
+        vertices.push_back({ 0, -height / 2.0f,0 });
+        vertices.push_back({ 0,-1,0 });
+
+        for (unsigned int i = 0; i < segment; i++) {
+            float radian = i * 2.0f * PI / (float)segment;
+            Vec3 pos;
+
+            pos.y = -height / 2.0f;
+            pos.x = cosf(radian) * radius;
+            pos.z = sinf(radian) * radius;
+
+            vertices.push_back(pos);
+            vertices.push_back({ 0,-1,0 });
         }
 
         this->radius = radius;
-    }
-
-    if (height > 0) {
-        for (unsigned int i = 0; i < vertices.size(); ) {
-            if (i < 4 * segment) {
-                vertices[i].y = height / 2.0f;
-                vertices[i + 2].y = -height / 2.0f;
-                i += 4;
-            }
-            else {
-                vertices[i].y = -height / 2.0f;
-                i += 2;
-            }
-        }
-
         this->height = height;
-    }
 
-    if (radius > 0 || height > 0) {
         vb->subData(0, vertices.size() * sizeof(Vec3), (float*)vertices.data());
     }
 }
 
-void Cone::setPosition(const Vec3 pos){
-    this->pos = pos;
+void Cone::setMaterial(Material material){
+    this->material = material;
 }
 
-Vec3 Cone::getPosition(){
-    return pos;
-}
-
-void Cone::setScale(const Vec3 scale){
-    this->scale = scale;
-}
-
-Vec3 Cone::getScale(){
-    return scale;
-}
-
-void Cone::rotate(Vec3 rot){
-    rotation = rotation + rot;
-}
-
-void Cone::setRotation(Vec3 rotation){
-    this->rotation = rotation;
-}
-
-Vec3 Cone::getRotation(){
-    return rotation;
-}
-
-void Cone::setColor(Vec3 color){
-    this->color = color;
-
-    for (unsigned int i = 1; i < vertices.size(); i += 2) {
-        vertices[i] = color;
-    }
-
-    vb->subData(0, vertices.size() * sizeof(Vec3), (float*)vertices.data());
-}
-
-Vec3 Cone::getColor(){
-    return color;
-}

@@ -1,3 +1,4 @@
+#pragma once
 #include "ShapeRenderer2D.h"
 #include "Core.h"
 #include <iostream>

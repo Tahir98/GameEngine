@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Scene.h"
 #include "Program.h"
 #include "VertexBuffer.h"
@@ -18,12 +20,13 @@
 #include "Model/Capsule.h"
 #include "Model/Cylinder.h"
 #include "Model/Cone.h"
+#include "Skybox/SpherecalSkybox.h"
+#include "Utility.h"
 
 class ModelScene : public Scene{
 private:
 	Program program;
 	Model model;
-	Model model2;
 
 	PerspectiveCamera camera;
 	InputHandler handler;
@@ -32,16 +35,15 @@ private:
 	float prevX, prevY;
 	float sensivity = 0.025f;
 
+	float counter = 0;
+
 	Matrix4x4 modelMatrix;
 	Matrix4x4 modelMatrix2;
 
 	Cube cube;
-	Vec3 cubePos = {0};
-	Vec3 cubeScale = { 1,1,1 };
-	float rotate = 0.001f;
-	float counter = 0;
 
 	Sphere sphere;
+	Sphere sphere2;
 	Capsule capsule;
 	Cone cone;
 	Cylinder cylinder;
@@ -54,35 +56,41 @@ private:
 	bool point = true;
 
 	float radius, height;
+
+	SpherecalSkybox skybox;
+
+	Light light;
 public:
-	ModelScene(GLFWwindow* window) :Scene(window),program("Shaders/modelvnt.shader") ,model("assets/Su-25/Su-25.obj"),sphere(2,50),
-		model2("assets/plane/airplane.obj"),camera(60, Application::aspectRatio, 0.1f, 1000), handler(window), cube(Vec3{ 5,0,0 })
+	ModelScene(GLFWwindow* window) :Scene(window), program("Shaders/modelvnt.shader"), model("assets/Su-25/Su-25.obj"),
+		 camera(60, Application::aspectRatio, 0.1f, 1000), handler(window)
+		, skybox("assets/rooitou_park.jpg")
 	{
 		modelMatrix = GLMath::scale(1,1,1);
-		modelMatrix2 = GLMath::translate({ 0,0,10 }) * GLMath::scale(0.06f, 0.06f, 0.06f);
-		camera.setPosition(0,0,-5);
 		
-		camera.rotY(90);
+		camera.setPosition(0,0,5);
+		
+		camera.rotY(00);
 
-		cube.setScale({ 0.1f,0.1f,0.1f });
+		sphere.setPosition({0,0,0});
+		cone.setPosition({-6,0,0});
+		capsule.setPosition({-3,0,0});
+		cylinder.setPosition({ 3,0,0 });
+		sphere2.setPosition({0,0,3});
+		cube.setPosition({6,0,0});
 
+		//sphere.debugMode = true;
+		sphere2.debugMode = true;
+		cone.debugMode = true;
+		capsule.debugMode = true;
+		cylinder.debugMode = true;
+		cube.debugMode = true;
 
-		sphere.setPosition({ 0,10,0 });
-		sphere.setSegment(50);
-		cone.setSize(5,10);
-		cone.setSegment(100);
-		cone.setPosition({ -30, 0, 0 });
-		capsule.setSegment(100);
-		capsule.setPosition({ 20,0,20 });
+		sphere.drawTexture = false;
 
-		cylinder.setPosition({0,0,-20});
-		cylinder.setSegment(100);
-
-		segment = capsule.getSegment();
-		sPrev = capsule.getSegment();
-
-		radius = capsule.getRadius();
-		height = capsule.getHeight();
+		light.pos = { 0,-5,0 };
+		light.ambient = { 0.5f,0.5f ,0.5f };
+		light.diffuse = { 0.8f,0.8f ,0.8f };
+		light.specular = { 1.0f,1.0f ,1.0f };
 	}
 
 
@@ -90,72 +98,48 @@ public:
 		input(delta);
 		imguiRender(delta);
 
-		//counter += delta;
+		counter += delta;
 		glDisable(GL_CULL_FACE);
 
 
-		modelMatrix = GLMath::scale(1, 1, 1) * GLMath::rotateZ(counter) * GLMath::rotateY(counter * 0.8f);
+		modelMatrix = GLMath::translate({ 0,0,-0 }) *  GLMath::scale(1, 1, 1) * GLMath::rotateZ(counter) * GLMath::rotateY(counter * 0.8f);
+		
 
 		camera.update(delta);
-		cube.setPosition(cubePos);
-		cube.setScale(cubeScale);
-		cube.rotate({ 0, rotate, 0 });
-
-		program.bind();
+		
+		/*program.bind();
 		program.setUniformMatrix4fv("model",1,false,modelMatrix.m[0]);
 		program.setUniformMatrix4fv("view",1,false,camera.getViewMatrix());
 		program.setUniformMatrix4fv("projection",1,false,camera.combine());
 
 		Vec3 pos = cube.getPosition();
 		program.setUniform3f("light.position", pos.x, pos.y, pos.z);
-		program.setUniform3f("light.ambient", 0.5f, 0.5f, 0.5f);
-		program.setUniform3f("light.diffuse", 0.7f, 0.7f, 0.7f);
-		program.setUniform3f("light.specular", 0.9f, 0.9f, 0.9f);
+		program.setUniform3f("light.ambient", 0.1f, 0.1f, 0.1f);
+		program.setUniform3f("light.diffuse", 0.5f, 0.5f, 0.5f);
+		program.setUniform3f("light.specular", 1.0f, 1.0f, 1.0f);
 
 		for (unsigned int i = 0; i < 1; i++) {
 			model.draw(program);
 
 			program.setUniformMatrix4fv("model", 1, false, modelMatrix2.m[0]);
 			model2.draw(program);
-		}
+		}*/
 
-		sphere.rotate({ 0.00f,PI / 25.0f * delta,0 });
+		sphere.rotate({ 0.00f,PI / 20.0f * delta * 0,0 });
 		
 		for (unsigned int i = 0; i < 1; i++) {
-			cube.draw(camera);
-			sphere.draw(camera);
-			cylinder.draw(camera);
-			cone.draw(camera);
+			capsule.draw(camera,light);
+			cube.draw(camera,light);
+			sphere.draw(camera,light);
+			sphere2.draw(camera);
+			cylinder.draw(camera,light);
+			cone.draw(camera,light);
 		}
 		
+		skybox.draw(camera);
+	
+		light.pos = sphere2.getPosition();
 
-		if (segment != sPrev) {
-			capsule.setSegment(segment);
-			sPrev = segment;
-		}
-
-		if (radius != capsule.getRadius()) {
-			capsule.setRadius(radius);
-		}
-
-		if (height != capsule.getHeight()) {
-			capsule.setHeight(height);
-		}
-
-		if (point) {
-			capsule.setDrawMode(Capsule::DrawMode::POINT);
-			capsule.draw(camera);
-		}
-
-		if (tri) {
-			capsule.setDrawMode(Capsule::DrawMode::TRIANGLE);
-			capsule.draw(camera);
-		}
-
-		if (wf) {
-			capsule.setDrawMode(Capsule::DrawMode::LINE);
-			capsule.draw(camera);
-		}
 	}
 	
 	void input(const float delta) {
@@ -213,19 +197,7 @@ public:
 		ImGui::Begin("Settings");
 
 		ImGui::Text("FPS : %03d  Frame Time : %.3f", (int)(1.0f/delta),delta);
-		ImGui::SliderFloat3("Cube Pos", ((float*)&cubePos), -20.0f, 20.0f);
-		ImGui::SliderFloat3("Cube Scale", ((float*)&cubeScale), 0.1f, 20.0f);
-
-		ImGui::SliderFloat("Rotation speed", &rotate, 0, 0.01f);
-
-		ImGui::SliderInt("Segment", &segment, 3, 50);
-
-		ImGui::Checkbox("Triangle", &tri);
-		ImGui::Checkbox("Wire Frame", &wf);
-		ImGui::Checkbox("point", &point);
-
-		ImGui::SliderFloat("Radius", &radius, 0.1f, 10);
-		ImGui::SliderFloat("Height", &height, 0.0f, 10);
+		
 		ImGui::End();
 	}
 };

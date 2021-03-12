@@ -1,3 +1,4 @@
+#pragma once
 #include "SpriteBatch.h"
 #include "GL/glew.h"
 #include <iostream>

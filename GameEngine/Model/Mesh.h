@@ -1,3 +1,4 @@
+#pragma once
 #include "GL/glew.h"
 #include "GLMath.h"
 #include <string>
@@ -9,6 +10,7 @@
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
+#include "Utility.h"
 
 struct Vertex {
 	Vec3 position;
@@ -20,13 +22,6 @@ struct MeshTexture {
 	unsigned int id;
 	std::string type;
 	aiString path;
-};
-
-struct Material {
-	Vec3 ambient;
-	Vec3 diffuse;
-	Vec3 specular;
-	float shininess;
 };
 
 class Mesh {

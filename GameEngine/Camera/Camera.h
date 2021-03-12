@@ -77,6 +77,10 @@ public:
 
 	void rotX(const float degree) {
 		pitch += degree;
+		if (pitch > 80)
+			pitch = 80;
+		else if (pitch < -80)
+			pitch = -80;
 	}
 
 	void rotY(const float degree) {
@@ -91,11 +95,21 @@ public:
 		pitch += rot.x;
 		yaw += rot.y;
 		roll += rot.z;
+
+		if (pitch > 80)
+			pitch = 80;
+		else if (pitch < -80)
+			pitch = -80;
 	}
 
 	void rotate(const float x, const float y, const float z) {
 		pitch += x;
 		yaw += y;
 		roll += z;
+
+		if (pitch > 80)
+			pitch = 80;
+		else if (pitch < -80)
+			pitch = -80;
 	}
 };

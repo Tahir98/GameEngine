@@ -1,30 +1,37 @@
+#pragma once
 #include "Capsule.h"
 #include <iostream>
+#include "imgui.h"
 
 Capsule::Capsule(){
     init();
 }
 
-Capsule::Capsule(const Vec3 pos, const float radius, const float height) : pos(pos){
+Capsule::Capsule(const Vec3 pos, const float radius, const float height){
+    this->pos = pos;
+
     if (radius > 0)
-        this->radius = radius;
-    if (height > 0)
-        this->height = height;
+        this->radius = rTemp = radius;
+    if (height >= 0)
+        this->height = hTemp = height;
 
     init();
 }
 
-Capsule::Capsule(const Vec3 pos, const Vec3 scale, const Vec3 rotation) : pos(pos),scale(scale),rotation(rotation){
+Capsule::Capsule(const Vec3 pos, const Vec3 scale, const Vec3 rotation){
+    this->pos = pos;
+    this->scale = scale;
+    this->rotation = rotation;
     init();
 }
 
 Capsule::Capsule(const float radius, const float height, const unsigned int segment){
     if (radius > 0)
-        this->radius = radius;
-    if (height > 0)
-        this->height = height;
+        this->radius = rTemp = radius;
+    if (height >= 0)
+        this->height = hTemp = height;
     if (segment >= 3 && segment <= 50)
-        this->segment = segment;
+        this->segment = sTemp = segment;
 
     init();
 }
@@ -49,7 +56,12 @@ Capsule::~Capsule(){
 }
 
 void Capsule::init(){
-    program = new Program("Shaders/Cone.shader");
+    material.ambient = { 0.3f,0.3f,0.3f };
+    material.diffuse = { 0.7f,0.7f,0.7f };
+    material.specular = { 0.9f,0.9f,0.9f };
+    material.shininess = 150;
+
+    program = new Program("Shaders/shape.shader");
 
     vb = new VertexBuffer(nullptr, sizeof(Vec3) * 10200, GL_STATIC_DRAW);
 
@@ -66,8 +78,7 @@ void Capsule::init(){
 }
 
 void Capsule::draw(Camera& camera){
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
+    program->bind();
 
     model = GLMath::translate(pos) * GLMath::scale(scale) * GLMath::rotate(rotation);
 
@@ -77,30 +88,121 @@ void Capsule::draw(Camera& camera){
 
     va.bind();
 
-    if (mode == DrawMode::POINT) {
+    if ((debugMode && triangle) || (!debugMode && mode == DrawMode::TRIANGLE)) {
+        ib->bind();
+        program->setUniform1f("chosen", 2);
+
+        program->setUniform3f("material.ambient", material.ambient.x, material.ambient.y, material.ambient.z);
+        program->setUniform3f("material.diffuse", material.diffuse.x, material.diffuse.y, material.diffuse.z);
+        program->setUniform3f("material.specular", material.specular.x, material.specular.y, material.specular.z);
+        program->setUniform1f("material.shininess", material.shininess);
+
+        program->setUniform3f("light.specular", 0, 0, 0);
+
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    }
+
+    if ((debugMode && point) || (!debugMode && mode == DrawMode::POINT)) {
         program->setUniform1f("chosen", 0);
         glDrawArrays(GL_POINTS, 0, vertices.size() / 2);
     }
-    else if (mode == DrawMode::LINE) {
+    
+    if ((debugMode && line) || (!debugMode && mode == DrawMode::LINE)) {
         ibl->bind();
-        //glDisable(GL_DEPTH_TEST);
         program->setUniform1f("chosen", 1);
         glDrawElements(GL_LINES, lineIndices.size(), GL_UNSIGNED_INT, 0);
     }
-    else if (mode == DrawMode::TRIANGLE) {
-        ib->bind();
-        program->setUniform1f("chosen", 2);
-        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
+    if (debugMode) {
+        imGuiDraw();
+        if (sTemp != segment)
+            setSegment(sTemp);
+        if (rTemp != radius)
+            setRadius(rTemp);
+        if (hTemp != height)
+            setHeight(hTemp);
     }
 }
 
-void Capsule::setDrawMode(DrawMode mode){
-    this->mode = mode;
+void Capsule::draw(Camera& camera, Light light){
+    program->bind();
+
+    model = GLMath::translate(pos) * GLMath::scale(scale) * GLMath::rotate(rotation);
+
+    program->setUniformMatrix4fv("model", 1, false, model.m[0]);
+    program->setUniformMatrix4fv("view", 1, false, camera.getViewMatrix());
+    program->setUniformMatrix4fv("projection", 1, false, camera.combine());
+
+    va.bind();
+
+    if ((debugMode && triangle) || (!debugMode && mode == DrawMode::TRIANGLE)) {
+        ib->bind();
+        program->setUniform1f("chosen", 2);
+
+        program->setUniform3f("material.ambient", material.ambient.x, material.ambient.y, material.ambient.z);
+        program->setUniform3f("material.diffuse", material.diffuse.x, material.diffuse.y, material.diffuse.z);
+        program->setUniform3f("material.specular", material.specular.x, material.specular.y, material.specular.z);
+        program->setUniform1f("material.shininess", material.shininess);
+
+        program->setUniform3f("light.pos", light.pos.x, light.pos.y, light.pos.z);
+        program->setUniform3f("light.ambient", light.ambient.x, light.ambient.y, light.ambient.z);
+        program->setUniform3f("light.diffuse", light.diffuse.x, light.diffuse.y, light.diffuse.z);
+        program->setUniform3f("light.specular", light.specular.x, light.specular.y, light.specular.z);
+
+        Vec3 viewPos = camera.getPosition();
+        program->setUniform3f("viewPos", viewPos.x, viewPos.y, viewPos.z);
+
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    }
+
+    if ((debugMode && point) || (!debugMode && mode == DrawMode::POINT)) {
+        program->setUniform1f("chosen", 0);
+        glDrawArrays(GL_POINTS, 0, vertices.size() / 2);
+    }
+
+    if ((debugMode && line) || (!debugMode && mode == DrawMode::LINE)) {
+        ibl->bind();
+        program->setUniform1f("chosen", 1);
+        glDrawElements(GL_LINES, lineIndices.size(), GL_UNSIGNED_INT, 0);
+    }
+
+    if (debugMode) {
+        imGuiDraw();
+        if (sTemp != segment)
+            setSegment(sTemp);
+        if (rTemp != radius)
+            setRadius(rTemp);
+        if (hTemp != height)
+            setHeight(hTemp);
+    }
+}
+
+
+void Capsule::imGuiDraw(){
+    ImGui::Begin("Capsule");
+    ImGui::SliderFloat3("Position",(float*)&pos,-20,20);
+    ImGui::SliderFloat3("Scale", (float*)&scale, 0, 10);
+    ImGui::SliderFloat3("Rotation", (float*)&rotation, -PI, PI);
+    ImGui::SliderFloat3("amibent", (float*)&material.ambient, 0, 1);
+    ImGui::SliderFloat3("diffuse", (float*)&material.diffuse, 0, 1);
+    ImGui::SliderFloat3("specular", (float*)&material.specular, 0, 1);
+    ImGui::SliderFloat("shininess", &material.shininess, 1, 200);
+    ImGui::SliderInt("Segment", (int*)&sTemp, 3, 50);
+    ImGui::SliderFloat("Height", &hTemp, 0, 10);
+    ImGui::SliderFloat("Radius", &rTemp,  0, 10);
+    ImGui::Checkbox("Point",&point);
+    ImGui::Checkbox("Line",&line);
+    ImGui::Checkbox("Triangle",&triangle);
+    ImGui::End();
 }
 
 void Capsule::setSegment(const unsigned int segment){
+ 
     if (segment >= 3 && segment <= 50) {
         this->segment = segment;
+        if (sTemp != segment) {
+            sTemp = segment;
+        }
     }
     else {
         return;
@@ -134,7 +236,7 @@ void Capsule::setSegment(const unsigned int segment){
                 pos.z = cosf(degZ) * sinf(degY) * radius;
 
                 vertices.push_back(pos);
-                vertices.push_back({color});
+                vertices.push_back({ pos.x,pos.y - (k == 0 ? height / 2.0f : -height / 2.0f),pos.z });
             }
         }
     }
@@ -147,11 +249,11 @@ void Capsule::setSegment(const unsigned int segment){
         pos.y = height / 2.0f;
 
         vertices.push_back(pos);
-        vertices.push_back(color);
+        vertices.push_back({pos.x,0,pos.z});
 
         pos.y = -height / 2.0f;
         vertices.push_back(pos);
-        vertices.push_back(color);
+        vertices.push_back({ pos.x,0,pos.z });
     }
 
     /*     Indices      */
@@ -306,6 +408,13 @@ unsigned int Capsule::getSegment(){
 }
 
 void Capsule::setRadius(const float radius){
+    if (radius == this->radius)
+        return;
+
+    if (rTemp != radius) {
+        rTemp = radius;
+    }
+
     if (radius > 0) {
         for (unsigned int i = 0; i < 4 * segment * segment; i += 2) {
             vertices[i].x = (vertices[i].x / this->radius) * radius;
@@ -336,6 +445,13 @@ float Capsule::getRadius(){
 }
 
 void Capsule::setHeight(const float height){
+   if (height == this->height)
+        return;
+
+   if (hTemp != height) {
+       hTemp = height;
+   }
+
     if (height >= 0) {
         for (unsigned int i = 0; i < 4 * segment * segment; i += 2) {
             if (i < 2 * segment * segment) 
@@ -353,8 +469,7 @@ void Capsule::setHeight(const float height){
 
         this->height = height;
         vb->subData(0, vertices.size() * sizeof(Vec3), (float*)vertices.data());
-    }
-    
+    }   
 }
 
 float Capsule::getHeight(){
@@ -362,6 +477,32 @@ float Capsule::getHeight(){
 }
 
 void Capsule::setSize(const float radius, const float height){
+    if (rTemp != radius) {
+        rTemp = radius;
+    }
+
+    if (hTemp != height) {
+        hTemp = height;
+    }
+
+    if (height >= 0) {
+        for (unsigned int i = 0; i < 4 * segment * segment; i += 2) {
+            if (i < 2 * segment * segment)
+                vertices[i].y = vertices[i].y - this->height / 2.0f + height / 2.0f;
+            else
+                vertices[i].y = vertices[i].y + this->height / 2.0f - height / 2.0f;
+        }
+
+        for (unsigned int i = 4 * segment * segment; i < vertices.size(); i += 2) {
+            if (i % 4 == 0)
+                vertices[i].y = vertices[i].y - this->height / 2.0f + height / 2.0f;
+            else
+                vertices[i].y = vertices[i].y + this->height / 2.0f - height / 2.0f;
+        }
+
+        this->height = height;
+    }
+
     if (radius > 0) {
         for (unsigned int i = 0; i < 4 * segment * segment; i += 2) {
             vertices[i].x = (vertices[i].x / this->radius) * radius;
@@ -385,60 +526,11 @@ void Capsule::setSize(const float radius, const float height){
         this->radius = radius;
     }
 
-    if (height >= 0) {
-        for (unsigned int i = 0; i < 4 * segment * segment; i += 2) {
-            if (i < 2 * segment * segment)
-                vertices[i].y = vertices[i].y - this->height / 2.0f + height / 2.0f;
-            else
-                vertices[i].y = vertices[i].y + this->height / 2.0f - height / 2.0f;
-        }
-
-        for (unsigned int i = 4 * segment * segment; i < vertices.size(); i += 2) {
-            if (i % 4 == 0)
-                vertices[i].y = vertices[i].y - this->height / 2.0f + height / 2.0f;
-            else
-                vertices[i].y = vertices[i].y + this->height / 2.0f - height / 2.0f;
-        }
-
-        this->height = height;
-    }
-
-    if(radius > 0 || height >= 0)
+    if(radius >= 0 || height >= 0)
         vb->subData(0, vertices.size() * sizeof(Vec3), (float*)vertices.data());
 }
 
-void Capsule::setPosition(const Vec3 pos){
-    this->pos = pos;
+void Capsule::setMaterial(Material material){
+    this->material = material;
 }
 
-Vec3 Capsule::getPosition(){
-    return pos;
-}
-
-void Capsule::setScale(const Vec3 scale){
-    this->scale = scale;
-}
-
-Vec3 Capsule::getScale(){
-    return scale;
-}
-
-void Capsule::rotate(Vec3 rot){
-    rotation = rotation + rot;
-}
-
-void Capsule::setRotation(Vec3 rotation){
-    this->rotation = rotation;
-}
-
-Vec3 Capsule::getRotation(){
-    return rotation;
-}
-
-void Capsule::setColor(Vec3 color){
-    this->color = color;
-}
-
-Vec3 Capsule::getColor(){
-    return color;
-}
