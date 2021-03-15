@@ -72,9 +72,6 @@
     <ClCompile Include="Model\Cylinder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Model\Cylinder.h">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="external_lib\ImGui\imgui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -197,6 +194,9 @@
     <ClInclude Include="Model\Capsule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClCompile Include="Model\Cylinder.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClInclude Include="Model\Shape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
