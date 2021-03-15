@@ -2,6 +2,9 @@
 #include "Cylinder.h"
 //#include <iostream>
 #include "imgui.h"
+#include <string>
+
+static int objectCount = 0;
 
 Cylinder::Cylinder(){
     init();
@@ -52,9 +55,13 @@ Cylinder::~Cylinder(){
     lineIndices.clear();
     lineIndices.resize(0);
     lineIndices.shrink_to_fit();
+
+    objectCount--;
 }
 
 void Cylinder::init(){
+    m_objectCount = objectCount++;
+
     material.ambient = { 0.3f,0.3f,0.3f };
     material.diffuse = { 0.7f,0.7f,0.7f };
     material.specular = { 0.9f,0.9f,0.9f };
@@ -151,6 +158,9 @@ void Cylinder::draw(Camera& camera, Light light){
         program->setUniform3f("light.ambient", light.ambient.x, light.ambient.y, light.ambient.z);
         program->setUniform3f("light.diffuse", light.diffuse.x, light.diffuse.y, light.diffuse.z);
         program->setUniform3f("light.specular", light.specular.x, light.specular.y, light.specular.z);
+        program->setUniform1f("light.constant", light.constant);
+        program->setUniform1f("light.linear", light.linear);
+        program->setUniform1f("light.quadrantic", light.quadrantic);
 
         Vec3 viewPos = camera.getPosition();
         program->setUniform3f("viewPos", viewPos.x, viewPos.y, viewPos.z);
@@ -181,7 +191,7 @@ void Cylinder::draw(Camera& camera, Light light){
 }
 
 void Cylinder::imGuiDraw(){
-    ImGui::Begin("Cylinder");
+    ImGui::Begin(("Cylinder" + std::to_string(m_objectCount)).c_str());
     ImGui::SliderFloat3("Position", (float*)&pos, -20, 20);
     ImGui::SliderFloat3("Scale", (float*)&scale, 0, 10);
     ImGui::SliderFloat3("Rotation", (float*)&rotation, -PI, PI);

@@ -20,6 +20,7 @@
 #include "Model/Capsule.h"
 #include "Model/Cylinder.h"
 #include "Model/Cone.h"
+#include "Model/Plane.h"
 #include "Skybox/SpherecalSkybox.h"
 #include "Utility.h"
 
@@ -47,6 +48,7 @@ private:
 	Capsule capsule;
 	Cone cone;
 	Cylinder cylinder;
+	Plane plane;
 
 	int segment = 3;
 	int sPrev = 3;
@@ -77,13 +79,16 @@ public:
 		cylinder.setPosition({ 3,0,0 });
 		sphere2.setPosition({0,0,3});
 		cube.setPosition({6,0,0});
+		plane.setPosition({3,0,3});
 
-		//sphere.debugMode = true;
+
+		sphere.debugMode = true;
 		sphere2.debugMode = true;
 		cone.debugMode = true;
 		capsule.debugMode = true;
 		cylinder.debugMode = true;
 		cube.debugMode = true;
+		plane.debugMode = true;
 
 		sphere.drawTexture = false;
 
@@ -134,6 +139,8 @@ public:
 			sphere2.draw(camera);
 			cylinder.draw(camera,light);
 			cone.draw(camera,light);
+			plane.draw(camera,light);
+
 		}
 		
 		skybox.draw(camera);

@@ -3,25 +3,25 @@
 #include "Shape.h"
 #include "Texture.h"
 
-class Cube : public Shape {
+class Plane : public Shape {
 public:
 	bool drawTexture = 1;
 
 private:
-	Vec3 size = { 1,1,1 }, sTemp = {1,1,1};
+	Vec3 size = { 1,0,1 }, sTemp = { 1,0,1 };
 	Texture* texture = nullptr;
 
 	const char* texturePath = nullptr;
 
 	int m_objectCount = 0;
 public:
-	Cube();
-	Cube(const char* texturePath);
-	Cube(const Vec3 pos,const Vec3 size, const char* texturePath);
-	Cube(const Vec3 pos, const Vec3 scale, const Vec3 rotation, const char* texturePath);
+	Plane();
+	Plane(const char* texturePath);
+	Plane(const Vec3 pos, const Vec3 size, const char* texturePath);
+	Plane(const Vec3 pos, const Vec3 scale, const Vec3 rotation, const char* texturePath);
 
-	Cube(const Vec3 size, const char* texturePath);
-	~Cube();
+	Plane(const Vec3 size, const char* texturePath);
+	~Plane();
 
 	void init() override;
 

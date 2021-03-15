@@ -13,6 +13,7 @@ private:
 
 	const char* texturePath = nullptr;
 	
+	int m_objectCount = 0;
 public:
 	Sphere();
 	Sphere(const char* texturePath);

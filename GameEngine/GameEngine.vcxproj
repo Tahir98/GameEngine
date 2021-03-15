@@ -123,6 +123,7 @@
     <ClCompile Include="Model\Model.cpp" />
     <ClCompile Include="Model\Cylinder.cpp" />
     <ClCompile Include="Model\Cylinder.h" />
+    <ClCompile Include="Model\Plane.cpp" />
     <ClCompile Include="Model\Sphere.cpp" />
     <ClCompile Include="Text\TextRenderer.cpp" />
   </ItemGroup>
@@ -159,6 +160,7 @@
     <ClInclude Include="Model\Cube.h" />
     <ClInclude Include="Model\Mesh.h" />
     <ClInclude Include="Model\Model.h" />
+    <ClInclude Include="Model\Plane.h" />
     <ClInclude Include="Model\Shape.h" />
     <ClInclude Include="Model\Sphere.h" />
     <ClInclude Include="Scenes\FlappyBird.h" />

@@ -8,6 +8,8 @@ private:
 
 	float radius = 0.5f, rTemp = 0.5f;
 	float height = 1, hTemp = 1;
+
+	int m_objectCount = 0;
 public:
 	Capsule();
 	Capsule(const Vec3 pos, const float radius, const float height);
