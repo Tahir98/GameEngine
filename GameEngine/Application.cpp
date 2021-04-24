@@ -3,8 +3,12 @@
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 #include "Core.h"
-#include "Scenes/ModelScene.h"
+#include "Scenes/ShapesScene.h"
+//#include "Scenes/Physics2D.h"
+//#include "Scenes/ModelScene.h"
 //#include "Scenes/FlappyBird.h"
+//#include "Scenes/ParticalScene.h"
+//#include "Scenes/ShapeRenderer2DDemo.h"
 #include <string>
 #include <iostream>
 #include "GLMath.h"
@@ -22,7 +26,10 @@ int main() {
 	if (!glfwInit())
 		return -1;
 
+	
+
 	GLFWwindow* window = glfwCreateWindow((int)Application::width,(int)Application::height,"Opengl FPS = 60",nullptr,nullptr);
+	
 
 	if (window != nullptr)
 		glfwMakeContextCurrent(window);
@@ -33,7 +40,12 @@ int main() {
 	std::cout << glGetString(GL_RENDERER) << std::endl;
 
 	float prev = 0, now = (float)glfwGetTime();
-	ModelScene scene(window);
+	ShapesScene scene(window);
+	//FlappyBird scene(window);
+	//ParticalScene scene(window);
+	//ShapeRenderer2DDemo scene(window);
+	//ModelScene scene(window);
+
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -59,8 +71,8 @@ int main() {
 	EngineLog elog;
 
 	while (!glfwWindowShouldClose(window)){
-		glClearColor(0.392156899f, 0.584313750f, 0.929411829f, 1);
-		//glClearColor(0.5f,0.5f,0.5f,1.0f);
+		//glClearColor(0.392156899f, 0.584313750f, 0.929411829f, 1);
+		glClearColor(0.5f,0.5f,0.5f,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glfwPollEvents();
 
@@ -68,8 +80,6 @@ int main() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-
-		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 		
 		prev = now;
 		now = (float)glfwGetTime();

@@ -117,6 +117,7 @@
     <ClCompile Include="GLLib\VertexArray.cpp" />
     <ClCompile Include="GLLib\VertexBuffer.cpp" />
     <ClCompile Include="Model\Capsule.cpp" />
+    <ClCompile Include="Model\Circle3D.cpp" />
     <ClCompile Include="Model\Cone.cpp" />
     <ClCompile Include="Model\Cube.cpp" />
     <ClCompile Include="Model\Mesh.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="GLLib\VertexArray.h" />
     <ClInclude Include="GLLib\VertexBuffer.h" />
     <ClInclude Include="Model\Capsule.h" />
+    <ClInclude Include="Model\Circle3D.h" />
     <ClInclude Include="Model\Cone.h" />
     <ClInclude Include="Model\Cube.h" />
     <ClInclude Include="Model\Mesh.h" />
@@ -163,13 +165,13 @@
     <ClInclude Include="Model\Plane.h" />
     <ClInclude Include="Model\Shape.h" />
     <ClInclude Include="Model\Sphere.h" />
-    <ClInclude Include="Scenes\FlappyBird.h" />
-    <ClInclude Include="Scenes\LightingScene.h" />
     <ClInclude Include="Scenes\ModelScene.h" />
+    <ClInclude Include="Scenes\FlappyBird.h" />
+    <ClInclude Include="Scenes\ShapesScene.h" />
     <ClInclude Include="Scenes\ParticalScene.h" />
-    <ClInclude Include="Scenes\SampleScene.h" />
+    <ClInclude Include="Scenes\Physics2D.h" />
     <ClInclude Include="Scenes\Scene.h" />
-    <ClInclude Include="Scenes\SpriteScene.h" />
+    <ClInclude Include="Scenes\ShapeRenderer2DDemo.h" />
     <ClInclude Include="Text\TextRenderer.h" />
   </ItemGroup>
   <ItemGroup>

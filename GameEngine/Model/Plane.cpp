@@ -54,9 +54,9 @@ void Plane::init(){
 
 	program = new Program("Shaders/sphereWF.shader");
 
-	vb = new VertexBuffer(nullptr, sizeof(Vec3) * 72, GL_STATIC_DRAW);
-	ib = new IndexBuffer(nullptr, sizeof(unsigned int) * 36, GL_STATIC_DRAW);
-	ibl = new IndexBuffer(nullptr, sizeof(unsigned int) * 40, GL_STATIC_DRAW);
+	vb = new VertexBuffer(nullptr, sizeof(Vec3) * 12, GL_STATIC_DRAW);
+	ib = new IndexBuffer(nullptr, sizeof(unsigned int) * 6, GL_STATIC_DRAW);
+	ibl = new IndexBuffer(nullptr, sizeof(unsigned int) * 10, GL_STATIC_DRAW);
 
 	va.bind();
 	vb->bind();

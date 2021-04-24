@@ -88,9 +88,4 @@ public:
 		}
 	}
 
-
-	void addParticals(float delta) {
-
-	}
-
 };

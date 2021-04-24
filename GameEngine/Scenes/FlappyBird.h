@@ -101,7 +101,7 @@ public:
 
 		shape.setColor({1,0,0,1});
 
-		text = new TextRenderer("assets/ArialUnicodeMS.ttf",Application::height/20);
+		text = new TextRenderer("assets/arial.ttf",Application::height/20);
 	}
 
 	~FlappyBird() {

@@ -54,10 +54,10 @@ void ShapeRenderer2D::end(){
 		program.setUniform1f("height",Application::height);
 
 		if (shapeType == ShapeType::FILLED) {
-			glDrawElements(GL_TRIANGLES,(GLsizei)indices.size(),GL_UNSIGNED_INT,nullptr);
+			glDrawElements(GL_TRIANGLES,indices.size(),GL_UNSIGNED_INT,nullptr);
 		}
 		else if (shapeType == ShapeType::LINE) {
-			glDrawElements(GL_LINES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, nullptr);
 		}
 		sBegin = false;
 	}

@@ -9,6 +9,6 @@ public:
 	Scene(GLFWwindow* window):window(window){}
 
 
-	virtual void update(const float delta){}
-	virtual void input(const float delta){}
+	virtual void update(const float delta) = 0;
+	virtual void input(const float delta) = 0;
 };

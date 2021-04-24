@@ -99,21 +99,15 @@
     <ClCompile Include="Model\Plane.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Model\Circle3D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Scenes\LightingScene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Scenes\ParticalScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Scenes\SampleScene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Scenes\Scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Scenes\SpriteScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GLLib\IndexBuffer.h">
@@ -170,7 +164,7 @@
     <ClInclude Include="Text\TextRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Scenes\ModelScene.h">
+    <ClInclude Include="Scenes\ShapesScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GDK\EngineLog.h">
@@ -231,6 +225,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Model\Plane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\Circle3D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Scenes\Physics2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Scenes\ShapeRenderer2DDemo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Scenes\ModelScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

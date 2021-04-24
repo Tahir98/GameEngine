@@ -40,12 +40,15 @@ struct Light{
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+
+    float constant;
+    float m_linear;
+    float quadrantic;
 };
 
 uniform Material material;
 uniform Light light;
 uniform vec3 lightPos;
-uniform vec3 lightColor;
 uniform vec3 viewerPos;
 
 in vec3 pos;
@@ -59,7 +62,8 @@ uniform sampler2D texture_specular1;
 
 
 void main(){
-    
+    vec2 t = texCoord;
+    t.y = 1.0f - t.y;
 
     vec3 ambient = light.ambient * material.ambient;
 
@@ -75,6 +79,8 @@ void main(){
     float spec = pow(max(dot(viewerDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * (spec * material.specular);
 
-    vec3 result = ambient + diffuse + specular;
-    color = vec4(result, 1.0) * texture(texture_diffuse1, texCoord) * 0.01 + vec4(result, 1.0) * 0.99;
+    float distance = length(light.position - pos);
+
+    vec3 result = (1.0f/(light.constant + light.m_linear * distance + light.quadrantic * distance * distance)) * (ambient + diffuse + specular);
+    color = vec4(result, 1.0f) * texture(texture_diffuse1, t);
 }

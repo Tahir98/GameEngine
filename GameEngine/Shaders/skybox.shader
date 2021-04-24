@@ -10,7 +10,7 @@ uniform mat4 projection;
 
 void main() {
 	texCoord = vec2(vTexCoord.xy);
-	vec4 result = vec4(vPos, 1.0) * view * projection;
+	vec4 result = vec4(vPos, 1.0f) * view * projection;
 	result.z = result.w;
 	gl_Position = result;
 }
@@ -25,6 +25,6 @@ uniform sampler2D tex;
 
 void main() {
 	vec4 color = texture(tex, texCoord);
-	color.w = 1;
+	color.w = 1.0f;
 	outColor = color;
 }
